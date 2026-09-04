@@ -18,3 +18,4 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->midd
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+// Add comment, remove later
