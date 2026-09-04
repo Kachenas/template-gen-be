@@ -11,6 +11,11 @@ variable "health_check_path" {
   description = "Path the ALB health check requests — /up for Laravel"
   type        = string
 }
+variable "certificate_arn" {
+  description = "ACM certificate ARN (regional, same region as the ALB) for the HTTPS listener. Leave blank to serve plain HTTP only."
+  type        = string
+  default     = ""
+}
 variable "tags" {
   type    = map(string)
   default = {}

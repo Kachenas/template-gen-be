@@ -40,6 +40,18 @@ variable "developer_user_names" {
   default     = []
 }
 
+variable "custom_domain" {
+  description = "Custom domain for the ALB (e.g. 'staging-api.vibecheckkits.com'). Leave blank to use the ALB's default *.elb.amazonaws.com DNS name over plain HTTP."
+  type        = string
+  default     = "staging-api.vibecheckkits.com"
+}
+
+variable "root_domain" {
+  description = "Apex domain whose existing Route53 hosted zone and regional (ap-southeast-1) wildcard ACM cert are reused for custom_domain. Required if custom_domain is set."
+  type        = string
+  default     = "vibecheckkits.com"
+}
+
 variable "telescope_enabled" {
   description = "Whether Laravel Telescope records/serves the /telescope dashboard in this environment. Toggling this alone doesn't affect the live ECS service (its task_definition is Terraform-ignored so app deploys aren't clobbered) — see docs/AWS-FAQ.md for how to actually roll the change out."
   type        = bool

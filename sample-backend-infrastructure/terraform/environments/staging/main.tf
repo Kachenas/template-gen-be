@@ -88,6 +88,7 @@ module "alb" {
   security_group_id = module.security_groups.alb_security_group_id
   container_port    = var.container_port
   health_check_path = var.health_check_path
+  certificate_arn   = local.certificate_arn
   tags              = local.tags
 }
 
@@ -146,7 +147,7 @@ module "ecs" {
   container_environment = [
     { name = "APP_ENV", value = "staging" },
     { name = "APP_DEBUG", value = "false" },
-    { name = "APP_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "APP_URL", value = var.custom_domain != "" ? "https://${var.custom_domain}" : "http://${module.alb.alb_dns_name}" },
     { name = "LOG_CHANNEL", value = "stderr" },
     { name = "DB_CONNECTION", value = "pgsql" },
     { name = "DB_SSLMODE", value = "require" },

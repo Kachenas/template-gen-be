@@ -18,6 +18,27 @@
 4. Create the `staging` GitHub environment in the `Kachenas/template-gen-be` repo, and populate its variables/secrets (see the "Suggested GitHub Environment Values" table printed by the skill).
 5. Run `terraform init` + `terraform plan` + `terraform apply` from `sample-backend-infrastructure/terraform/environments/staging` locally, with admin AWS credentials — CI's role doesn't exist as something to assume until this first apply creates it... actually the role is created manually in step 3, so CI can run immediately after that. Running the first apply from CI once the role and environment exist is fine too.
 
+## Why did `terraform plan`/`apply` fail on the `aws_route53_record.api_alias` or `data.aws_acm_certificate.wildcard` resources?
+
+The deploy role needs Route53 write access (to create the `staging-api.vibecheckkits.com` alias record) and ACM read access (to look up the existing `*.vibecheckkits.com` regional certificate). Neither is in the managed-policy list from the skill. Attach `AmazonRoute53FullAccess`, plus this inline policy for ACM (read-only — Terraform only looks the cert up, it never creates or modifies one here):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AcmReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "acm:ListCertificates",
+        "acm:DescribeCertificate"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
 ## Why did `terraform plan`/`apply` fail with `AccessDeniedException ... dynamodb:PutItem/GetItem`?
 
 None of the managed policies above grant DynamoDB access — the S3 backend's state locking needs its own scoped permission on the lock table. Attach this as an inline policy on the deploy role (`template-gen-be/GitHubActions`):
