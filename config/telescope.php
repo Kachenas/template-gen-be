@@ -94,7 +94,7 @@ return [
 
     'middleware' => array_filter([
         'web',
-        app()->environment('local') ? null : 'auth.basic',
+        env('APP_ENV', 'production') === 'local' ? null : 'auth.basic',
         Authorize::class,
     ]),
 
