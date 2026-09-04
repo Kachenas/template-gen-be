@@ -153,6 +153,7 @@ module "ecs" {
     { name = "DB_SSLMODE", value = "require" },
     { name = "RUN_MIGRATIONS", value = "true" },
     { name = "TELESCOPE_ENABLED", value = var.telescope_enabled ? "true" : "false" },
+    { name = "CORS_ALLOWED_ORIGINS", value = "https://staging-portal.vibecheckkits.com" },
   ]
 
   secret_keys = [
