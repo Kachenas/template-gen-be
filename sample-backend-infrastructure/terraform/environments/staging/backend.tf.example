@@ -1,0 +1,11 @@
+# Documents the partial S3 backend config passed via -backend-config in CI
+# (.github/workflows/terraform-staging.yml). Not consumed directly — the
+# `backend "s3" {}` block lives in main.tf; this file is a reference only
+# for running `terraform init` locally, e.g.:
+#
+#   terraform init \
+#     -backend-config="bucket=sample-backend-tf-state" \
+#     -backend-config="key=sample-backend/staging/terraform.tfstate" \
+#     -backend-config="region=ap-southeast-1" \
+#     -backend-config="dynamodb_table=sample-backend-tf-lock" \
+#     -backend-config="encrypt=true"

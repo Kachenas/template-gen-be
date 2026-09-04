@@ -1,0 +1,16 @@
+services:
+  pgsql:
+    image: postgres:17
+    container_name: sample_db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: sample
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgsql_data:/var/lib/postgresql/data
+
+volumes:
+  pgsql_data:
