@@ -151,6 +151,7 @@ module "ecs" {
     { name = "DB_CONNECTION", value = "pgsql" },
     { name = "DB_SSLMODE", value = "require" },
     { name = "RUN_MIGRATIONS", value = "true" },
+    { name = "TELESCOPE_ENABLED", value = var.telescope_enabled ? "true" : "false" },
   ]
 
   secret_keys = [

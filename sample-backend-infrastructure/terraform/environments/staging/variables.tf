@@ -39,3 +39,9 @@ variable "developer_user_names" {
   type        = list(string)
   default     = []
 }
+
+variable "telescope_enabled" {
+  description = "Whether Laravel Telescope records/serves the /telescope dashboard in this environment. Toggling this alone doesn't affect the live ECS service (its task_definition is Terraform-ignored so app deploys aren't clobbered) — see docs/AWS-FAQ.md for how to actually roll the change out."
+  type        = bool
+  default     = true
+}
