@@ -92,6 +92,14 @@ module "alb" {
   tags              = local.tags
 }
 
+module "waf" {
+  source = "../../modules/waf"
+
+  project_name = local.project_name
+  alb_arn      = module.alb.alb_arn
+  tags         = local.tags
+}
+
 module "rds" {
   source = "../../modules/rds"
 

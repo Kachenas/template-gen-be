@@ -66,6 +66,10 @@ None of the managed policies above grant DynamoDB access — the S3 backend's st
 
 The deploy role is missing `AmazonEC2FullAccess`, which is required because the bastion module manages an EC2 instance. `AmazonVPCFullAccess` covers networking but not plain instance lifecycle actions.
 
+## Why did `terraform apply` fail on `aws_wafv2_web_acl` or `aws_wafv2_web_acl_association`?
+
+The deploy role is missing WAF permissions — attach the managed policy `AWSWAFFullAccess` (covers `wafv2:*`, used to create the rate-based Web ACL and associate it with the ALB).
+
 ## Why is the ECS service stuck, tasks cycling?
 
 Almost always the ALB health check failing. Check:
