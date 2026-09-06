@@ -121,12 +121,18 @@ jobs:
       - name: Comment PR with Plan
         if: steps.action.outputs.value == 'plan' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
+        env:
+          # Passed via env, not spliced into the script below: the plan
+          # output can contain arbitrary braces/backticks (e.g. rendered
+          # jsonencode() policy blocks) that would break the JS template
+          # literal if substituted directly by ${{ }} at the YAML level.
+          PLAN: "${{ steps.plan.outputs.stdout }}"
         with:
           script: |
             const output = `#### Terraform Plan (Production)
 
             \`\`\`
-            ${{ steps.plan.outputs.stdout }}
+            ${process.env.PLAN}
             \`\`\`
 
             *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
