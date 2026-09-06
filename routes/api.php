@@ -11,7 +11,7 @@ Route::prefix('auth/microsoft')->name('auth.microsoft.')->group(function () {
     Route::get('/callback', [MicrosoftAuthController::class, 'callback'])->name('callback');
 });
 
-Route::post('/register', [RegisteredUserController::class, 'store'])->name('register');
+Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('throttle:register')->name('register');
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('login');
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum')->name('logout');
 

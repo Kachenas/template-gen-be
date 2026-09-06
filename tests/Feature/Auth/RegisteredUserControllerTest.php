@@ -4,11 +4,32 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class RegisteredUserControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The register endpoint is now rate limited per-IP; the test client
+        // shares one IP across every test in this class, so the array cache
+        // must be reset between tests to avoid one test's requests tripping
+        // the limit for another.
+        Cache::flush();
+    }
+
+    public function test_register_endpoint_is_rate_limited_after_five_attempts_per_minute(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/register', [])->assertUnprocessable();
+        }
+
+        $this->postJson('/api/register', [])->assertStatus(429);
+    }
 
     public function test_valid_payload_creates_user_and_returns_201(): void
     {
