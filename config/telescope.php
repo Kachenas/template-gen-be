@@ -92,10 +92,11 @@ return [
     |
     */
 
-    'middleware' => [
+    'middleware' => array_filter([
         'web',
+        env('APP_ENV', 'production') === 'local' ? null : 'auth.basic',
         Authorize::class,
-    ],
+    ]),
 
     /*
     |--------------------------------------------------------------------------

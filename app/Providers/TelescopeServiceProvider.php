@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Laravel\Telescope\EntryType;
 use Laravel\Telescope\IncomingEntry;
 use Laravel\Telescope\Telescope;
 use Laravel\Telescope\TelescopeApplicationServiceProvider;
@@ -24,11 +25,24 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
             return $isLocal ||
                    $entry->isReportableException() ||
-                   $entry->isFailedRequest() ||
+                   $this->isFailedRequest($entry) ||
                    $entry->isFailedJob() ||
                    $entry->isScheduledTask() ||
                    $entry->hasMonitoredTag();
         });
+    }
+
+    /**
+     * Determine if the entry is a request with a client or server error response.
+     *
+     * Unlike Telescope's built-in isFailedRequest() (which only flags 5xx
+     * responses), this also captures 4xx responses such as failed login
+     * attempts (422) so they remain visible outside the local environment.
+     */
+    protected function isFailedRequest(IncomingEntry $entry): bool
+    {
+        return $entry->type === EntryType::REQUEST &&
+               ($entry->content['response_status'] ?? 200) >= 400;
     }
 
     /**
@@ -58,7 +72,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     {
         Gate::define('viewTelescope', function (User $user) {
             return in_array($user->email, [
-                //
+                'almonte.s.chester@gmail.com',
             ]);
         });
     }

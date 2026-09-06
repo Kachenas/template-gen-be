@@ -34,6 +34,40 @@ resource "aws_lb_listener" "http" {
   port              = 80
   protocol          = "HTTP"
 
+  # With a certificate, port 80 only redirects — it never forwards
+  # unencrypted traffic to the app once HTTPS is available.
+  dynamic "default_action" {
+    for_each = var.certificate_arn != "" ? [1] : []
+    content {
+      type = "redirect"
+      redirect {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+  }
+
+  dynamic "default_action" {
+    for_each = var.certificate_arn == "" ? [1] : []
+    content {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.this.arn
+    }
+  }
+
+  tags = var.tags
+}
+
+resource "aws_lb_listener" "https" {
+  count = var.certificate_arn != "" ? 1 : 0
+
+  load_balancer_arn = aws_lb.this.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = var.certificate_arn
+
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this.arn

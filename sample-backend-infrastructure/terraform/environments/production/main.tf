@@ -10,7 +10,7 @@ terraform {
 
   backend "s3" {
     # Bucket/key/region/dynamodb_table are supplied via -backend-config in CI
-    # (see .github/workflows/terraform-staging.yml) or a local backend-config
+    # (see .github/workflows/terraform-production.yml) or a local backend-config
     # file when running Terraform by hand. Never hardcode them here.
   }
 }
@@ -20,11 +20,11 @@ provider "aws" {
 }
 
 locals {
-  project_name = "staging-${var.project_name}"
+  project_name = "prod-${var.project_name}"
 
   tags = {
     Project     = var.project_name
-    Environment = "staging"
+    Environment = "production"
     ManagedBy   = "terraform"
   }
 }
@@ -33,7 +33,7 @@ module "networking" {
   source = "../../modules/networking"
 
   project_name = local.project_name
-  vpc_cidr     = "10.0.0.0/16"
+  vpc_cidr     = "10.1.0.0/16"
   tags         = local.tags
 }
 
@@ -98,12 +98,12 @@ module "rds" {
   project_name            = local.project_name
   private_subnet_ids      = module.networking.private_subnet_ids
   security_group_id       = module.security_groups.rds_security_group_id
-  instance_class          = "db.t3.micro"
+  instance_class          = "db.t3.small"
   db_name                 = var.db_name
   db_username             = var.db_username
   db_password             = var.db_password
-  skip_final_snapshot     = true
-  backup_retention_period = 0
+  skip_final_snapshot     = false
+  backup_retention_period = 7
   tags                    = local.tags
 }
 
@@ -138,14 +138,14 @@ module "ecs" {
   target_group_arn      = module.alb.target_group_arn
   secrets_arn           = module.secrets.secret_arn
   container_port        = var.container_port
-  task_cpu              = 256
-  task_memory           = 512
-  desired_count         = 1
-  log_retention_days    = 14
-  container_insights    = false
+  task_cpu              = 512
+  task_memory           = 1024
+  desired_count         = 2
+  log_retention_days    = 90
+  container_insights    = true
 
   container_environment = [
-    { name = "APP_ENV", value = "staging" },
+    { name = "APP_ENV", value = "production" },
     { name = "APP_DEBUG", value = "false" },
     { name = "APP_URL", value = var.custom_domain != "" ? "https://${var.custom_domain}" : "http://${module.alb.alb_dns_name}" },
     { name = "LOG_CHANNEL", value = "stderr" },
@@ -153,7 +153,7 @@ module "ecs" {
     { name = "DB_SSLMODE", value = "require" },
     { name = "RUN_MIGRATIONS", value = "true" },
     { name = "TELESCOPE_ENABLED", value = var.telescope_enabled ? "true" : "false" },
-    { name = "CORS_ALLOWED_ORIGINS", value = "https://staging-portal.vibecheckkits.com" },
+    { name = "CORS_ALLOWED_ORIGINS", value = "https://portal.vibecheckkits.com" },
   ]
 
   secret_keys = [

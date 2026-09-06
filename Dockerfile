@@ -16,7 +16,6 @@ RUN apk add --no-cache \
     intl \
     bcmath \
     zip \
-    opcache \
     && apk del --no-network .build-deps \
     && rm -rf /var/cache/apk/*
 
